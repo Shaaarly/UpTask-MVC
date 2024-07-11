@@ -67,6 +67,13 @@ class ActiveRecord {
         $resultado = self::consultarSQL($query);
         return array_shift( $resultado ) ;
     }
+    
+    // Busca todos los registros que pertenecen a una ID
+    public static function belongsTo($columna, $valor) {
+        $query = "SELECT * FROM " . static::$tabla . " WHERE $columna = '$valor'";
+        $resultado = self::consultarSQL($query);
+        return $resultado;
+    }
 
     // SQL para Consultas Avanzadas.
     public static function SQL($consulta) {
@@ -83,9 +90,9 @@ class ActiveRecord {
         // Insertar en la base de datos
         $query = " INSERT INTO " . static::$tabla . " ( ";
         $query .= join(', ', array_keys($atributos));
-        $query .= " ) VALUES (' "; 
+        $query .= " ) VALUES ('"; 
         $query .= join("', '", array_values($atributos));
-        $query .= " ') ";
+        $query .= "' ) ";
 
         // Resultado de la consulta
         $resultado = self::$db->query($query);
@@ -110,8 +117,6 @@ class ActiveRecord {
         $query .=  join(', ', $valores );
         $query .= " WHERE id = '" . self::$db->escape_string($this->id) . "' ";
         $query .= " LIMIT 1 "; 
-
-        // debuguear($query);
 
         $resultado = self::$db->query($query);
         return $resultado;
@@ -153,15 +158,15 @@ class ActiveRecord {
         return $objeto;
     }
 
-
-
     // Identificar y unir los atributos de la BD
     public function atributos() {
         $atributos = [];
         foreach(static::$columnasDB as $columna) {
-            if($columna === 'id') continue;
+            if ($columna === 'id') continue;
+            
             $atributos[$columna] = $this->$columna;
         }
+        
         return $atributos;
     }
 
