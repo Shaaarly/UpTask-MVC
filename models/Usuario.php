@@ -11,6 +11,8 @@ class Usuario extends ActiveRecord {
     public $email;
     public $password;
     public $password2;
+    public $passwordActual;
+    public $passwordNuevo;
     public $token;
     public $confirmado;
 
@@ -23,6 +25,8 @@ class Usuario extends ActiveRecord {
         $this->email = $args['email'] ?? '';
         $this->password = $args['password'] ?? '';
         $this->password2 = $args['password2'] ?? '';
+        $this->passwordActual = $args['passwordActual'] ?? '';
+        $this->passwordNuevo = $args['passwordNuevo'] ?? '';
         $this->token = $args['token'] ?? '';
         $this->confirmado = $args['confirmado'] ?? '0';
     }
@@ -77,13 +81,42 @@ class Usuario extends ActiveRecord {
         return self::$alertas;
     }
 
+    // Validar el perfil
+    public function validarPerfil() {
+        if(!$this->nombre) {
+            self::$alertas['error'][] = 'El Nombre es Obligatorio';
+        }
+        if(!$this->email) {
+            self::$alertas['error'][] = 'El Email es Obligatorio';
+        }
+        return self::$alertas;
+    }
+
+    public function nuevoPassword() : array{
+        if(!$this->passwordActual) {
+            self::$alertas['error'][] = 'El Password Actual no puede ir vacio';
+        }
+        if(!$this->passwordNuevo) {
+            self::$alertas['error'][] = 'El Password Nuevo no puede ir vacio';
+        }
+        if(strlen($this->passwordNuevo) < 6) {
+            self::$alertas['error'][] = 'El Password Nuevo debe contener al menos 6 carácteres';
+        }
+        return self::$alertas;
+    }
+
+    // Comprobar el password
+    public function comprobarPassword() : bool {
+        return password_verify($this->passwordActual, $this->password);
+    }
+
     // Hashea el password
-    public function hashPassword() {
+    public function hashPassword() : void {
         $this->password = password_hash($this->password, PASSWORD_BCRYPT );
     }
 
     // Generar un token
-    public function crearToken() {
+    public function crearToken() : void {
         $this->token = md5(uniqid());
     }
 
